@@ -31,13 +31,13 @@ class CompanyController extends Controller
         $companies = Company::with(['users']);
         // Membuat query builder untuk mendapatkan semua perusahaan dengan relasi users. with digunakan untuk memuat relasi terkait.
 
+        // Filtering
         // powerhuman.com/api/company?name=Kunde
         if ($companies) {
             $companies->where('name', 'Like', '%' . $name . '%');
         }
         // Memeriksa apakah query builder berhasil dibuat, dan jika ya, menambahkan kondisi where untuk mencari perusahaan berdasarkan nama yang sesuai filter.
 
-        // Company::with(['users'])=>where('name', 'Like', '%' . $name . '%')->paginate(10);
         return ResponseFormatter::success(
             $companies->paginate($limit),
             'Companies Found'
