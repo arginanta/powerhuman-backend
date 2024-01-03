@@ -4,13 +4,18 @@ namespace App\Http\Controllers\API;
 
 use App\Helpers\ResponseFormatter;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\CreateCompanyRequest;
+use App\Http\Requests\UpdateCompanyRequest;
 use App\Models\Company;
+use App\Models\User;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CompanyController extends Controller
 {
-    //
-    public function all(Request $request)
+
+    public function fetch(Request $request)
     {
         $id = $request->input('id');
         $name = $request->input('name');
@@ -42,5 +47,79 @@ class CompanyController extends Controller
             $companies->paginate($limit),
             'Companies Found'
         );
+    }
+
+    public function create(CreateCompanyRequest $request)
+    {
+
+        try {
+            // Upload Logo
+            // Cek apakah ada file logo yang diunggah dalam request
+            if ($request->hasFile('logo')) {
+                // Jika ada, simpan file logo dalam direktori public/logos
+                $path = $request->file('logo')->store('public/logos');
+            }
+
+            // Create Company
+            // Buat instance Company dengan menggunakan method create dan isi kolom name dan logo
+            $company = Company::create([
+                'name' => $request->name,
+                'logo' => $path, // Jika ada file logo, gunakan path yang telah disimpan
+            ]);
+
+            // Jika company tidak berhasil dibuat, lemparkan Exception
+            if (!$request) {
+                throw new Exception('Company not created');
+            }
+
+            // Attach company to user
+            // Mengaitkan company yang baru dibuat dengan user yang saat ini terautentikasi
+            $user = User::find(Auth::id());
+            $user->companies()->attach($company->id);
+
+            // Load users at company
+            // Memuat relasi users pada company
+            $company->load('users');
+
+            // Berikan response sukses jika tidak ada masalah
+            return ResponseFormatter::success($company, 'Company created');
+        } catch (Exception $e) {
+            // Tangani exception dengan memberikan response error
+            return ResponseFormatter::error($e->getMessage(), 500);
+        }
+    }
+
+    public function update(UpdateCompanyRequest $request, $id)
+    {
+        try {
+
+            // Get Company
+            // Temukan perusahaan dengan ID yang diberikan
+            $company = Company::find($id); // Company::findOrFail($id); 
+
+            // Check if company exist
+            // Periksa apakah perusahaan ditemukan
+            if (!$company) {
+                throw new Exception('Company not found');
+            }
+
+            // Uploud Logo
+            if ($request->hasFile('logo')) {
+                // Simpan file logo yang diunggah dalam direktori 'public/logos'
+                $path = $request->file('logo')->store('public/logos');
+            }
+
+            // Update company
+            // Perbarui perusahaan dengan jalur logo yang baru
+            $company->update([
+                'name' => $request->name,
+                'logo' => $path
+            ]);
+
+            // Kembalikan respons sukses dengan data perusahaan yang diperbarui
+            return ResponseFormatter::success($company, 'Company Update');
+        } catch (Exception $e) {
+            return ResponseFormatter::error($e->getMessage(), 500);
+        }
     }
 }

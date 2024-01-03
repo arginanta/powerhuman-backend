@@ -20,8 +20,19 @@ use Illuminate\Support\Facades\Route;
 //     return $request->user();
 // });
 
-Route::get('/company', [CompanyController::class, 'all']);
+// Company API BARU
+Route::prefix('company')->middleware('auth:sanctum')->name('company.')->group(function () {
+    Route::get('', [CompanyController::class, 'fetch'])->name('fetch');
+    Route::post('', [CompanyController::class, 'create'])->name('create');
+    Route::put('', [CompanyController::class, 'update'])->name('update');
+});
 
+// Company API LAMA
+// Route::get('company', [CompanyController::class, 'all']);
+// Route::post('company', [CompanyController::class, 'create'])->middleware('auth:sanctum');
+// Route::put('company', [CompanyController::class, 'update'])->middleware('auth:sanctum');
+
+// Auth API
 Route::post('login', [UserController::class, 'login']);
 Route::post('register', [UserController::class, 'register']);
 Route::post('logout', [UserController::class, 'logout'])->middleware('auth:sanctum');
