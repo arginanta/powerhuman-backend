@@ -15,15 +15,21 @@ use Illuminate\Support\Facades\Auth;
 class CompanyController extends Controller
 {
 
+    // List Company by User
     public function fetch(Request $request)
     {
         $id = $request->input('id');
         $name = $request->input('name');
         $limit = $request->input('limit', 10);
 
+        $companyQuery = Company::with(['users'])->whereHas('users', function ($query) {
+            $query->where('user_id', Auth::id());
+        });
+
+        // Get single data
         // powerhuman.com/api/company?id=1
         if ($id) {
-            $company = Company::with(['users'])->find($id);
+            $company = $companyQuery->find($id);
 
             if ($company) {
                 return ResponseFormatter::success($company, 'Company Found');
@@ -32,9 +38,9 @@ class CompanyController extends Controller
             return ResponseFormatter::error('Company not found', 404);
         }
 
-        // powerhuman.com/api/company
-        $companies = Company::with(['users']);
-        // Membuat query builder untuk mendapatkan semua perusahaan dengan relasi users. with digunakan untuk memuat relasi terkait.
+
+        // Get multiple data
+        $companies = $companyQuery;
 
         // Filtering
         // powerhuman.com/api/company?name=Kunde
@@ -92,7 +98,6 @@ class CompanyController extends Controller
     public function update(UpdateCompanyRequest $request, $id)
     {
         try {
-
             // Get Company
             // Temukan perusahaan dengan ID yang diberikan
             $company = Company::find($id); // Company::findOrFail($id); 
