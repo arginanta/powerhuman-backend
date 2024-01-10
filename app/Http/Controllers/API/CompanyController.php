@@ -74,7 +74,7 @@ class CompanyController extends Controller
             ]);
 
             // Jika company tidak berhasil dibuat, lemparkan Exception
-            if (!$request) {
+            if (!$company) {
                 throw new Exception('Company not created');
             }
 
