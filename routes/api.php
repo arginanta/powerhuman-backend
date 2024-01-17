@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\API\CompanyController;
+use App\Http\Controllers\API\TeamController;
 use App\Http\Controllers\API\UserController;
+use GuzzleHttp\Promise\Create;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -20,11 +22,25 @@ use Illuminate\Support\Facades\Route;
 //     return $request->user();
 // });
 
-// Company API BARU
+// Company API 
 Route::prefix('company')->middleware('auth:sanctum')->name('company.')->group(function () {
     Route::get('', [CompanyController::class, 'fetch'])->name('fetch');
     Route::post('', [CompanyController::class, 'create'])->name('create');
     Route::post('update/{id}', [CompanyController::class, 'update'])->name('update');
+});
+
+// Team API 
+Route::prefix('team')->middleware('auth:sanctum')->name('team.')->group(function () {
+    Route::get('', [TeamController::class, 'fetch'])->name('fetch');
+    Route::post('', [TeamController::class, 'create'])->name('create');
+    Route::post('update/{id}', [TeamController::class, 'update'])->name('update');
+    Route::delete('{id}', [TeamController::class, 'destroy'])->name('destroy');
+});
+
+// Team API
+Route::prefix('team')->middleware('auth:sanctum')->name('company.')->group
+(function () {
+    Route::post('', [TeamController::class, 'create'])->name('create');
 });
 
 // Auth API
